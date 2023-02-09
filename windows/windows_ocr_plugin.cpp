@@ -137,12 +137,6 @@ namespace
 		NsOCR->Engine_SetLicenseKey(L"AB2A4DD5FF2A");					   // required for licensed version only
 		NsOCR->Engine_InitializeAdvanced(&CfgObj, &OcrObj, &ImgObj);	   // initialize OCR engine, create objects and load configuration
 		NsOCR->Cfg_SetOption(CfgObj, BT_DEFAULT, L"Zoning/OneZone", L"9"); // NSOCR must create BT_MRZ zone that covers entire page
-																		   // wchar_t *path = new wchar_t[file.length() + 1];
-																		   // std::copy(file.begin(), file.end(), path);
-																		   // path[file.length()] = 0;
-		// unsigned char *test = new char[bytes.size()];					   // init this with the correct size
-
-		// std::copy(bytes.begin(), bytes.end(), test);
 
 		res = NsOCR->Img_LoadFromMemory(ImgObj, &bytes[0], bytesSize); // load some image for OCR
 		if (res > ERROR_FIRST)
@@ -164,17 +158,15 @@ namespace
 			wcout << "Svr_AddPage Erro" << endl;
 			return "";
 		};
-		wchar_t *pathMrz = new wchar_t[fileMrz.length() + 1];
+		wchar_t *pathMrz = new wchar_t[fileMrz.length() - 2];
 		std::copy(fileMrz.begin(), fileMrz.end(), pathMrz);
-		// path[fileMrz.length()] = 0;
-
 		res = NsOCR->Svr_SaveToFile(SvrObj, pathMrz); // save OCRed image to XML file
-		// int i = NsOCR->Svr_SaveToMemory(SvrObj, NULL,0) + 1; //get buffer size
-		// char* buffer = (char*)malloc(2 * i);
-		// res = NsOCR->Svr_SaveToMemory(SvrObj, buffer , i); //save OCRed image to memory
+		// char *buffer = new char[9999];
+
+		// res = NsOCR->Svr_SaveToMemory(SvrObj, buffer, 0); // save OCRed image to XML file
 		if (res > ERROR_FIRST)
 		{
-			wcout << "Svr_SaveToFile Erro" << pathMrz << endl;
+			wcout << "Svr_SaveToMemory Erro" << endl;
 			return "";
 		};
 

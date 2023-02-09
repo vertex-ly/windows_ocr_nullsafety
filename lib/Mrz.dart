@@ -26,29 +26,29 @@ class Mrz {
 
   Mrz(
       {this.linesCnt = '',
-        this.docType = '',
-        this.docSubType = '',
-        this.country = '',
-        this.lastName = '',
-        this.name = '',
-        this.docNumber = '',
-        this.nationality = '',
-        this.birthDate = '',
-        this.expDate = '',
-        this.sex = '',
-        this.personalNumber = '',
-        this.optionalData1 = '',
-        this.optionalData2 = '',
-        this.docNumCheck = '',
-        this.docNumberVerified = '',
-        this.birthDateCheck = '',
-        this.birthDateVerified = '',
-        this.expDateCheck = '',
-        this.expDateVerified = '',
-        this.personalNumberCheck = '',
-        this.personalNumberVerified = '',
-        this.compositeCheck = '',
-        this.compositeVerified = ''});
+      this.docType = '',
+      this.docSubType = '',
+      this.country = '',
+      this.lastName = '',
+      this.name = '',
+      this.docNumber = '',
+      this.nationality = '',
+      this.birthDate = '',
+      this.expDate = '',
+      this.sex = '',
+      this.personalNumber = '',
+      this.optionalData1 = '',
+      this.optionalData2 = '',
+      this.docNumCheck = '',
+      this.docNumberVerified = '',
+      this.birthDateCheck = '',
+      this.birthDateVerified = '',
+      this.expDateCheck = '',
+      this.expDateVerified = '',
+      this.personalNumberCheck = '',
+      this.personalNumberVerified = '',
+      this.compositeCheck = '',
+      this.compositeVerified = ''});
 
   Mrz.fromData(dynamic data) {
     linesCnt = data.getAttribute('LinesCnt');
@@ -75,5 +75,10 @@ class Mrz {
     personalNumberVerified = data.getAttribute('PersonalNumberVerified');
     compositeCheck = data.getAttribute('CompositeCheck');
     compositeVerified = data.getAttribute('CompositeVerified');
+  }
+
+  @override
+  String toString() {
+    return name + " " + lastName + " " + docNumber;
   }
 }

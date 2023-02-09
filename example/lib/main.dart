@@ -283,7 +283,10 @@ class _MyMrzData extends State<MyMrzData> {
       FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true, withData: true);
 
       if (result != null) {
-        mrz = await WindowsOcr.getMrzFromData(result.files.first.bytes!);
+        for (var file in result.files) {
+          mrz = await WindowsOcr.getMrzFromData(file.bytes!);
+          print(file.path! + "//" + mrz.toString());
+        }
       }
     } catch (error) {
       debugPrint('Error: $error');
