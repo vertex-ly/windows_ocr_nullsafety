@@ -1,9 +1,9 @@
-import 'package:file_chooser/file_chooser.dart';
 import 'package:flutter/material.dart';
 import 'package:windows_ocr/Barcode.dart';
 import 'package:windows_ocr/Languages.dart';
 import 'package:windows_ocr/Mrz.dart';
 import 'package:windows_ocr/windows_ocr.dart';
+import 'package:file_picker/file_picker.dart';
 
 void main() {
   runApp(MaterialApp(
@@ -13,11 +13,13 @@ void main() {
 }
 
 class Home extends StatelessWidget {
+  const Home({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Windows OCR Example'),
+        title: const Text('Windows OCR Example'),
       ),
       body: Center(
         child: Column(
@@ -25,7 +27,7 @@ class Home extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ElevatedButton(
-              child: Text('OCR'),
+              child: const Text('OCR'),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -33,11 +35,11 @@ class Home extends StatelessWidget {
                 );
               },
             ),
-            SizedBox(
+            const SizedBox(
               height: 16,
             ),
             ElevatedButton(
-              child: Text('Barcode'),
+              child: const Text('Barcode'),
               onPressed: () {
                 Navigator.push(
                   context,
@@ -45,15 +47,27 @@ class Home extends StatelessWidget {
                 );
               },
             ),
-            SizedBox(
+            const SizedBox(
               height: 16,
             ),
             ElevatedButton(
-              child: Text('MRZ'),
+              child: const Text('MRZ'),
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => MyMrz()),
+                );
+              },
+            ),
+            const SizedBox(
+              height: 16,
+            ),
+            ElevatedButton(
+              child: const Text('MRZDate'),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MyMrzData()),
                 );
               },
             )
@@ -65,6 +79,8 @@ class Home extends StatelessWidget {
 }
 
 class MyBarcode extends StatefulWidget {
+  const MyBarcode({super.key});
+
   @override
   _MyBarcodeState createState() => _MyBarcodeState();
 }
@@ -83,10 +99,10 @@ class _MyBarcodeState extends State<MyBarcode> {
     List<Barcode> listBarcode = [];
     // Platform messages may fail, so we use a try/catch.
     try {
-      FileChooserResult result =
-          await showOpenPanel(allowsMultipleSelection: false);
-      if (!result.canceled) {
-        listBarcode = await WindowsOcr.getBarcode(result.paths[0]);
+      FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
+
+      if (result != null) {
+        listBarcode = await WindowsOcr.getBarcode(result.paths[0]!);
       }
     } catch (error) {
       debugPrint('Error: $error');
@@ -105,17 +121,17 @@ class _MyBarcodeState extends State<MyBarcode> {
         onPressed: () {
           initPlatformState();
         },
-        child: Icon(Icons.image),
+        child: const Icon(Icons.image),
       ),
       appBar: AppBar(
         title: const Text('Barcode'),
       ),
       body: Center(
           child: isLoading
-              ? CircularProgressIndicator()
+              ? const CircularProgressIndicator()
               : _listBarcode.length > 0
                   ? ListView.builder(
-                      padding: EdgeInsets.all(8),
+                      padding: const EdgeInsets.all(8),
                       itemCount: _listBarcode.length,
                       itemBuilder: (context, index) {
                         return ListTile(
@@ -124,12 +140,14 @@ class _MyBarcodeState extends State<MyBarcode> {
                         );
                       },
                     )
-                  : Text("Select Image")),
+                  : const Text("Select Image")),
     );
   }
 }
 
 class MyOcr extends StatefulWidget {
+  const MyOcr({super.key});
+
   @override
   _MyOcr createState() => _MyOcr();
 }
@@ -148,11 +166,10 @@ class _MyOcr extends State<MyOcr> {
     String ocr = '';
     // Platform messages may fail, so we use a try/catch.
     try {
-      FileChooserResult result =
-          await showOpenPanel(allowsMultipleSelection: false);
-      if (!result.canceled) {
-        ocr = await WindowsOcr.getOcr(result.paths[0],
-            language: Languages.English);
+      FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
+
+      if (result != null) {
+        ocr = await WindowsOcr.getOcr(result.paths[0]!, language: Languages.English);
       }
     } catch (error) {
       debugPrint('Error: $error');
@@ -171,25 +188,27 @@ class _MyOcr extends State<MyOcr> {
         onPressed: () {
           initPlatformState();
         },
-        child: Icon(Icons.image),
+        child: const Icon(Icons.image),
       ),
       appBar: AppBar(
         title: const Text('OCR'),
       ),
       body: Center(
-        child: isLoading ? CircularProgressIndicator() : Text('$_ocr'),
+        child: isLoading ? const CircularProgressIndicator() : Text('$_ocr'),
       ),
     );
   }
 }
 
 class MyMrz extends StatefulWidget {
+  const MyMrz({super.key});
+
   @override
   _MyMrz createState() => _MyMrz();
 }
 
 class _MyMrz extends State<MyMrz> {
-  Mrz _mrz;
+  Mrz? _mrz;
   bool isLoading = false;
 
   // Platform messages are asynchronous, so we initialize in an async method.
@@ -198,13 +217,13 @@ class _MyMrz extends State<MyMrz> {
       isLoading = true;
     });
 
-    Mrz mrz;
+    Mrz? mrz;
     // Platform messages may fail, so we use a try/catch.
     try {
-      FileChooserResult result =
-          await showOpenPanel(allowsMultipleSelection: false);
-      if (!result.canceled) {
-        mrz = await WindowsOcr.getMrz(result.paths[0]);
+      FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
+
+      if (result != null) {
+        mrz = await WindowsOcr.getMrz(result.paths[0]!);
       }
     } catch (error) {
       debugPrint('Error: $error');
@@ -223,22 +242,78 @@ class _MyMrz extends State<MyMrz> {
         onPressed: () {
           initPlatformState();
         },
-        child: Icon(Icons.image),
+        child: const Icon(Icons.image),
       ),
       appBar: AppBar(
         title: const Text('MRZ'),
       ),
       body: Center(
         child: isLoading
-            ? CircularProgressIndicator()
+            ? const CircularProgressIndicator()
             : Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Text(_mrz.lastName),
-                  Text(_mrz.name),
-                  Text(_mrz.docNumber)
-                ],
+                children: _mrz == null ? [] : [Text(_mrz!.lastName), Text(_mrz!.name), Text(_mrz!.docNumber)],
+              ),
+      ),
+    );
+  }
+}
+
+class MyMrzData extends StatefulWidget {
+  const MyMrzData({super.key});
+
+  @override
+  _MyMrzData createState() => _MyMrzData();
+}
+
+class _MyMrzData extends State<MyMrzData> {
+  Mrz? _mrz;
+  bool isLoading = false;
+
+  // Platform messages are asynchronous, so we initialize in an async method.
+  Future<void> initPlatformState() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    Mrz? mrz;
+    // Platform messages may fail, so we use a try/catch.
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true, withData: true);
+
+      if (result != null) {
+        mrz = await WindowsOcr.getMrzFromData(result.files.first.bytes!);
+      }
+    } catch (error) {
+      debugPrint('Error: $error');
+    }
+
+    setState(() {
+      isLoading = false;
+      _mrz = mrz;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          initPlatformState();
+        },
+        child: const Icon(Icons.image),
+      ),
+      appBar: AppBar(
+        title: const Text('MRZData'),
+      ),
+      body: Center(
+        child: isLoading
+            ? const CircularProgressIndicator()
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: _mrz == null ? [] : [Text(_mrz!.lastName), Text(_mrz!.name), Text(_mrz!.docNumber)],
               ),
       ),
     );

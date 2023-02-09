@@ -20,7 +20,25 @@ class WindowsOcr {
     return res;
   }
 
-  static Future<Mrz> getMrz(String filePath) async {
+  static Future<Mrz?> getMrzFromData(Uint8List bytes) async {
+    Directory tempDir = await getTemporaryDirectory();
+    String tempPath = tempDir.path + '\\' + 'out.xml';
+    final res = await _channel.invokeMethod('getMrzFromData', <String, dynamic>{
+      'bytes': bytes,
+      'bytesSize': bytes.length,
+      'pathXml': tempPath,
+    });
+    final document = XmlDocument.parse(res);
+    final mrzNodes = document.findAllElements('MRZ').toList();
+    Mrz? mrz;
+    if (mrzNodes.length > 0) {
+      XmlElement element = mrzNodes[0];
+      mrz = Mrz.fromData(element);
+    }
+    return mrz;
+  }
+
+  static Future<Mrz?> getMrz(String filePath) async {
     Directory tempDir = await getTemporaryDirectory();
     String tempPath = tempDir.path + '\\' + 'out.xml';
     final res = await _channel.invokeMethod('getMrz', <String, dynamic>{
@@ -29,7 +47,7 @@ class WindowsOcr {
     });
     final document = XmlDocument.parse(res);
     final mrzNodes = document.findAllElements('MRZ').toList();
-    Mrz mrz;
+    Mrz? mrz;
     if (mrzNodes.length > 0) {
       XmlElement element = mrzNodes[0];
       mrz = Mrz.fromData(element);
@@ -38,8 +56,7 @@ class WindowsOcr {
   }
 
   static Future<List<Barcode>> getBarcode(String filePath) async {
-    final res = await _channel
-        .invokeMethod<List<dynamic>>('getBarcode', <String, dynamic>{
+    final res = await _channel.invokeMethod<List<dynamic>>('getBarcode', <String, dynamic>{
       'path': filePath,
     });
     debugPrint(res.toString());
