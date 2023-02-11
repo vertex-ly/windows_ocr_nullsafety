@@ -124,7 +124,7 @@ namespace
 		return s;
 	}
 
-	std::string getMrzFromData(std::vector<uint8_t> bytes, int bytesSize, std::string fileMrz)
+	std::string getMrzFromData(std::vector<uint8_t> bytes, int bytesSize)
 	{
 		int CfgObj, OcrObj, ImgObj, SvrObj, res;
 		TNSOCR *NsOCR;
@@ -158,37 +158,32 @@ namespace
 			wcout << "Svr_AddPage Erro" << endl;
 			return "";
 		};
-		wchar_t *pathMrz = new wchar_t[fileMrz.length() - 2];
-		std::copy(fileMrz.begin(), fileMrz.end(), pathMrz);
-		res = NsOCR->Svr_SaveToFile(SvrObj, pathMrz); // save OCRed image to XML file
-		// char *buffer = new char[9999];
 
-		// res = NsOCR->Svr_SaveToMemory(SvrObj, buffer, 0); // save OCRed image to XML file
+		int SizeInBytes = NsOCR->Svr_SaveToMemory(SvrObj, NULL, 0);
+
+		cout << "SizeInBytes: " << SizeInBytes << endl;
+
+		unsigned char *buffer = (unsigned char *)malloc(SizeInBytes);
+
+		res = NsOCR->Svr_SaveToMemory(SvrObj, (char *)buffer, SizeInBytes); // save OCRed image to XML file
+
 		if (res > ERROR_FIRST)
 		{
 			wcout << "Svr_SaveToMemory Erro" << endl;
 			return "";
 		};
-
-		std::ifstream fin(pathMrz, std::ios::binary);
-		fin.seekg(0, ios::end);
-		size_t size = (size_t)fin.tellg();
-
-		// skip BOM
-		fin.seekg(2, ios::beg);
-		size -= 2;
-
-		std::u16string u16((size / 2) + 1, '\0');
-		fin.read((char *)&u16[0], size);
-
-		std::string utf8 = std::wstring_convert<
-							   std::codecvt_utf8_utf16<char16_t>, char16_t>{}
-							   .to_bytes(u16);
-		std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> convert;
+		std::string xmlString(reinterpret_cast<char *>(buffer), SizeInBytes);
 
 		NsOCR->Engine_Uninitialize(); // release all created objects and uninitialize OCR engine
 
-		return utf8;
+		return xmlString;
+	}
+
+	std::string bufferToString(char *buffer, int bufflen)
+	{
+		std::string ret(buffer, bufflen);
+
+		return ret;
 	}
 
 	std::string getMrz(std::string file, std::string fileMrz)
@@ -406,8 +401,6 @@ namespace
 		}
 		else if (method_call.method_name().compare("getMrzFromData") == 0)
 		{
-			std::string fileMrz;
-
 			std::vector<uint8_t> bytes;
 			int bytesSize = 0;
 
@@ -424,13 +417,7 @@ namespace
 				bytesSize = std::get<int>(vl2->second);
 			}
 
-			auto vll = arguments->find(flutter::EncodableValue("pathXml"));
-			if (vll != arguments->end())
-			{
-				fileMrz = std::get<std::string>(vll->second);
-			}
-
-			result->Success(flutter::EncodableValue(getMrzFromData(bytes, bytesSize, fileMrz).c_str()));
+			result->Success(flutter::EncodableValue(getMrzFromData(bytes, bytesSize)));
 		}
 		else if (method_call.method_name().compare("getBarcode") == 0)
 		{

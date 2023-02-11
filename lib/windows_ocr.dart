@@ -21,16 +21,17 @@ class WindowsOcr {
   }
 
   static Future<Mrz?> getMrzFromData(Uint8List bytes) async {
-    Directory tempDir = await getTemporaryDirectory();
-    String tempPath = tempDir.path + '\\' + 'out.xml';
-    // print(tempPath);
-    final res = await _channel.invokeMethod('getMrzFromData', <String, dynamic>{
-      'bytes': bytes,
-      'bytesSize': bytes.length,
-      'pathXml': tempPath,
-    });
+    final res = await _channel.invokeMethod<String>('getMrzFromData', <String, dynamic>{'bytes': bytes, 'bytesSize': bytes.length});
+
     try {
-      final document = XmlDocument.parse(res);
+      final cleanXml = <int>[];
+      for (var char in res!.codeUnits) {
+        print(char);
+        if (char == 0) continue;
+        cleanXml.add(char);
+      }
+      var xml = String.fromCharCodes(cleanXml);
+      final document = XmlDocument.parse(xml);
       final mrzNodes = document.findAllElements('MRZ').toList();
       Mrz? mrz;
       if (mrzNodes.length > 0) {
@@ -39,6 +40,7 @@ class WindowsOcr {
       }
       return mrz;
     } on Exception catch (e) {
+      print(e);
       return null;
     }
   }
