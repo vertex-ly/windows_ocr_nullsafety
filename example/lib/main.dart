@@ -4,7 +4,7 @@ import 'package:windows_ocr/Languages.dart';
 import 'package:windows_ocr/Mrz.dart';
 import 'package:windows_ocr/windows_ocr.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:image/image.dart' as im;
+// import 'package:image/image.dart' as im;
 
 void main() {
   runApp(MaterialApp(
@@ -287,9 +287,9 @@ class _MyMrzData extends State<MyMrzData> {
         for (var file in result.files) {
           mrz = await WindowsOcr.getMrzFromData(file.bytes!);
           if (mrz == null) {
-            var imImage = im.decodeImage(file.bytes!)!;
-            imImage = im.contrast(imImage, contrast: 180);
-            mrz = await WindowsOcr.getMrzFromData(im.encodePng(imImage));
+            // var imImage = im.decodeImage(file.bytes!)!;
+            // imImage = im.contrast(imImage, contrast: 180);
+            // mrz = await WindowsOcr.getMrzFromData(im.encodePng(imImage));
           }
 
           print(file.path! + "//" + mrz.toString());
