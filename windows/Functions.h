@@ -1,7 +1,7 @@
 //******************************************************************************
 //                           Nicomsoft OCR Engine
-//                    Copyright (c) 2010-2016 Nicomsoft
-//                 Copyright (c) 2010-2016 Michael Kapustin
+//                    Copyright (c) 2010-2021 Nicomsoft
+//                 Copyright (c) 2010-2021 Mikhail Kapustin
 //                                www.nsocr.com
 //******************************************************************************
 

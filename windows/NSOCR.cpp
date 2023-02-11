@@ -2,15 +2,15 @@
 
 //******************************************************************************
 //                        Nicomsoft OCR DLL interface
-//                    Copyright (c) 2010-2016 Nicomsoft
-//                 Copyright (c) 2010-2016 Michael Kapustin
+//                    Copyright (c) 2010-2021 Nicomsoft
+//                 Copyright (c) 2010-2021 Mikhail Kapustin
 //                           www.nsocr.com
 //******************************************************************************
 
 #ifdef _WIN32
 
 
-//#include "Forcelib.h" //to avoid linker problem with LIBCMTD.lib
+#include "Forcelib.h" //to avoid linker problem with LIBCMTD.lib
 
 #include <Windows.h>
 
