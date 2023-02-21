@@ -4,10 +4,10 @@ import 'package:windows_ocr/Languages.dart';
 import 'package:windows_ocr/Mrz.dart';
 import 'package:windows_ocr/windows_ocr.dart';
 import 'package:file_picker/file_picker.dart';
-// import 'package:image/image.dart' as im;
+import 'package:image/image.dart' as im;
 
 void main() {
-  runApp(MaterialApp(
+  runApp(const MaterialApp(
     title: 'Windows OCR',
     home: Home(),
   ));
@@ -32,7 +32,7 @@ class Home extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MyOcr()),
+                  MaterialPageRoute(builder: (context) => const MyOcr()),
                 );
               },
             ),
@@ -44,7 +44,7 @@ class Home extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MyBarcode()),
+                  MaterialPageRoute(builder: (context) => const MyBarcode()),
                 );
               },
             ),
@@ -56,7 +56,7 @@ class Home extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MyMrz()),
+                  MaterialPageRoute(builder: (context) => const MyMrz()),
                 );
               },
             ),
@@ -68,7 +68,7 @@ class Home extends StatelessWidget {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MyMrzData()),
+                  MaterialPageRoute(builder: (context) => const MyMrzData()),
                 );
               },
             )
@@ -167,10 +167,16 @@ class _MyOcr extends State<MyOcr> {
     String ocr = '';
     // Platform messages may fail, so we use a try/catch.
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(allowMultiple: true);
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        allowMultiple: false,
+        withData: true,
+      );
 
       if (result != null) {
-        ocr = await WindowsOcr.getOcr(result.paths[0]!, language: Languages.English);
+        ocr = await WindowsOcr.getOcrFromData(
+          result.files.first.bytes!,
+          language: Languages.English,
+        );
       }
     } catch (error) {
       debugPrint('Error: $error');
@@ -287,12 +293,20 @@ class _MyMrzData extends State<MyMrzData> {
         for (var file in result.files) {
           mrz = await WindowsOcr.getMrzFromData(file.bytes!);
           if (mrz == null) {
-            // var imImage = im.decodeImage(file.bytes!)!;
+            var imImage = im.decodeImage(file.bytes!)!;
             // imImage = im.contrast(imImage, contrast: 180);
-            // mrz = await WindowsOcr.getMrzFromData(im.encodePng(imImage));
+            imImage = im.copyCrop(
+              imImage,
+              x: 0,
+              y: (imImage.height ~/ 3.0),
+              width: imImage.width,
+              height: imImage.height,
+            );
+
+            mrz = await WindowsOcr.getMrzFromData(im.encodePng(imImage));
           }
 
-          print(file.path! + "//" + mrz.toString());
+          // print(file.path! + "//" + mrz.toString());
         }
       }
     } catch (error) {

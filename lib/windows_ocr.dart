@@ -12,6 +12,15 @@ import 'Barcode.dart';
 class WindowsOcr {
   static const MethodChannel _channel = const MethodChannel('windows_ocr');
 
+  static Future<String> getOcrFromData(Uint8List bytes, {language = "English"}) async {
+    final String res = await _channel.invokeMethod('getOcrFromData', <String, dynamic>{
+      'bytes': bytes,
+      'bytesSize': bytes.length,
+      'language': 'Languages/$language',
+    });
+    return res;
+  }
+
   static Future<String> getOcr(String filePath, {language = "English"}) async {
     final String res = await _channel.invokeMethod('getOcr', <String, dynamic>{
       'path': filePath,
@@ -21,12 +30,13 @@ class WindowsOcr {
   }
 
   static Future<Mrz?> getMrzFromData(Uint8List bytes) async {
-    final res = await _channel.invokeMethod<String>('getMrzFromData', <String, dynamic>{'bytes': bytes, 'bytesSize': bytes.length});
-
+    final res = await _channel.invokeMethod<String>('getMrzFromData', <String, dynamic>{
+      'bytes': bytes,
+      'bytesSize': bytes.length,
+    });
     try {
       final cleanXml = <int>[];
       for (var char in res!.codeUnits) {
-        print(char);
         if (char == 0) continue;
         cleanXml.add(char);
       }

@@ -124,6 +124,66 @@ namespace
 		return s;
 	}
 
+	std::string getOcrFromData(std::vector<uint8_t> bytes, int bytesSize, std::string language)
+	{
+		TNSOCR *NsOCR;
+		NsOCR = new TNSOCR(L"Bin_64/NSOCR.dll");
+		if (!NsOCR->IsDllLoaded())
+		{
+			wcout << "DLL not LOADED" << endl;
+			return "";
+		}
+		NsOCR->Engine_SetLicenseKey(L"AB2A4DD5FF2A"); // required for licensed version only
+		int CfgObj, OcrObj, ImgObj, res, n;
+		wchar_t *txt;
+		NsOCR->Engine_InitializeAdvanced(&CfgObj, &OcrObj, &ImgObj); // initialize OCR engine, create objects and load configuration
+		wchar_t *languageChar = new wchar_t[language.length() + 1];
+		std::copy(language.begin(), language.end(), languageChar);
+		languageChar[language.length()] = 0;
+		if (languageChar)
+		{
+			wcout << languageChar << endl;
+		}
+		else
+		{
+			wcout << "No language provided" << endl;
+		}
+
+		NsOCR->Cfg_SetOption(CfgObj, BT_DEFAULT, languageChar, L"1");
+
+		res = NsOCR->Img_LoadFromMemory(ImgObj, &bytes[0], bytesSize); // load some image for OCR
+
+		if (res > ERROR_FIRST)
+		{
+			wcout << "File not LOADED" << endl;
+			return "";
+		};
+		res = NsOCR->Img_OCR(ImgObj, OCRSTEP_FIRST, OCRSTEP_LAST, OCRFLAG_NONE); // perform OCR
+		if (res > ERROR_FIRST)
+		{
+			wcout << "OCR Error" << endl;
+			return "";
+		};
+		n = NsOCR->Img_GetImgText(ImgObj, NULL, 0, FMT_EXACTCOPY) + 1; // get length in unicode characters plus terminating NULL character
+		txt = (wchar_t *)malloc(2 * n);								   // allocate memory for text
+		NsOCR->Img_GetImgText(ImgObj, txt, n, FMT_EXACTCOPY);		   // get text
+		NsOCR->Engine_Uninitialize();								   // release all created objects and uninitialize OCR engine
+
+		std::string s = wchar2string(txt);
+		free(txt); // free memory
+		wcout << s.c_str() << endl;
+		struct InvalidChar
+		{
+			bool operator()(char c) const
+			{
+				return !isprint(static_cast<unsigned char>(c));
+			}
+		};
+		s.erase(std::remove_if(s.begin(), s.end(), InvalidChar()), s.end());
+
+		return s.c_str();
+	}
+
 	std::string getMrzFromData(std::vector<uint8_t> bytes, int bytesSize)
 	{
 		int CfgObj, OcrObj, ImgObj, SvrObj, res;
@@ -161,7 +221,7 @@ namespace
 
 		int SizeInBytes = NsOCR->Svr_SaveToMemory(SvrObj, NULL, 0);
 
-		cout << "SizeInBytes: " << SizeInBytes << endl;
+		// cout << "SizeInBytes: " << SizeInBytes << endl;
 
 		unsigned char *buffer = (unsigned char *)malloc(SizeInBytes);
 
@@ -379,6 +439,32 @@ namespace
 			}
 
 			result->Success(flutter::EncodableValue(getOcr(file, language).c_str()));
+		}
+		else if (method_call.method_name().compare("getOcrFromData") == 0)
+		{
+			std::vector<uint8_t> bytes;
+			int bytesSize = 0;
+			std::string language;
+			const auto *arguments = std::get_if<flutter::EncodableMap>(method_call.arguments());
+			auto vl = arguments->find(flutter::EncodableValue("bytes"));
+			if (vl != arguments->end())
+			{
+				bytes = std::get<std::vector<uint8_t>>(vl->second);
+			}
+
+			auto vl2 = arguments->find(flutter::EncodableValue("bytesSize"));
+			if (vl2 != arguments->end())
+			{
+				bytesSize = std::get<int>(vl2->second);
+			}
+
+			auto va = arguments->find(flutter::EncodableValue("language"));
+			if (va != arguments->end())
+			{
+				language = std::get<std::string>(va->second);
+			}
+
+			result->Success(flutter::EncodableValue(getOcrFromData(bytes, bytesSize, language)));
 		}
 		else if (method_call.method_name().compare("getMrz") == 0)
 		{
