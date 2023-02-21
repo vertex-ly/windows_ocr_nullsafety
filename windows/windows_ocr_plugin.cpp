@@ -120,7 +120,7 @@ namespace
 
 		std::string s = wchar2string(txt);
 		free(txt); // free memory
-		wcout << s.c_str() << endl;
+		// wcout << s.c_str() << endl;
 		return s;
 	}
 
@@ -171,15 +171,16 @@ namespace
 
 		std::string s = wchar2string(txt);
 		free(txt); // free memory
-		wcout << s.c_str() << endl;
 		struct InvalidChar
 		{
 			bool operator()(char c) const
 			{
-				return !isprint(static_cast<unsigned char>(c));
+				bool isNotPrintable = !isprint(static_cast<unsigned char>(c));
+				return isNotPrintable && c != '\n';
 			}
 		};
 		s.erase(std::remove_if(s.begin(), s.end(), InvalidChar()), s.end());
+		// wcout << s.c_str() << endl;
 
 		return s.c_str();
 	}
